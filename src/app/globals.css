@@ -19,6 +19,14 @@
       transform: translateX(-100%);
     }
   }
+
+  --animate-ken-burns: ken-burns 20s ease-in-out infinite alternate;
+
+  @keyframes ken-burns {
+    to {
+      transform: scale(1.12) translate(-2%, -1%);
+    }
+  }
 }
 
 @theme inline {
@@ -40,6 +48,39 @@ body {
   color: var(--color-ink);
 }
 
+/* Player seek bar: red progress over a translucent track. */
+.seek-bar {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 4px;
+  border-radius: 9999px;
+  cursor: pointer;
+  background: linear-gradient(
+    to right,
+    var(--color-paw) var(--progress, 0%),
+    rgb(255 255 255 / 0.3) var(--progress, 0%)
+  );
+}
+.seek-bar::-webkit-slider-thumb {
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 9999px;
+  background: var(--color-paw);
+}
+.seek-bar::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--color-paw);
+}
+.seek-bar:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 4px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -47,5 +88,10 @@ body {
   ::backdrop {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+
+  /* Looping, so shortening it would flicker; switch it off instead. */
+  .animate-ken-burns {
+    animation: none !important;
   }
 }

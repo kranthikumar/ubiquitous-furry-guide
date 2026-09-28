@@ -42,6 +42,7 @@ export type Category = { slug: string; label: string };
 export type Channel = {
   handle: string;
   name: string;
+  subscribers: number;
   avatar: Critter & { bg: string };
 };
 
@@ -56,6 +57,7 @@ export type Video = {
   scene: Scene;
   critters: Critter[];
   caption?: string[];
+  description: string;
 };
 
 export const categories: Category[] = [
@@ -129,61 +131,73 @@ export const channels: Channel[] = [
   {
     handle: "fuzzbuttvlogs",
     name: "FuzzButtVlogs",
+    subscribers: 201_000,
     avatar: { ...fox, shirt: "#2f6fb5", bg: "#fde2cf" },
   },
   {
     handle: "artbysparky",
     name: "ArtBySparky",
+    subscribers: 88_400,
     avatar: { ...fox, shirt: "#8e3b2f", bg: "#f7ecd9" },
   },
   {
     handle: "wuffcreations",
     name: "WuffCreations",
+    subscribers: 342_000,
     avatar: { ...tanDog, shirt: "#2d3a4f", bg: "#dfe9f7" },
   },
   {
     handle: "gamerhyena",
     name: "GamerHyena",
+    subscribers: 57_300,
     avatar: { ...hyena, shirt: "#2b2d42", bg: "#e7e1f7" },
   },
   {
     handle: "anthronation",
     name: "AnthroNation",
+    subscribers: 1_140_000,
     avatar: { ...brownWolf, shirt: "#1f3a5f", bg: "#dde7f3" },
   },
   {
     handle: "furtales",
     name: "FurTales",
+    subscribers: 129_000,
     avatar: { ...brownWolf, shirt: "#6b8f3c", bg: "#e4f0d6" },
   },
   {
     handle: "merchmutt",
     name: "MerchMutt",
+    subscribers: 2_060_000,
     avatar: { ...greyHusky, shirt: "#e0312b", bg: "#fbe0de" },
   },
   {
     handle: "dancepaws",
     name: "DancePaws",
+    subscribers: 415_000,
     avatar: { ...purpleDragon, shirt: "#e6388b", bg: "#f1ddfb" },
   },
   {
     handle: "anthroconnect",
     name: "AnthroConnect",
+    subscribers: 23_800,
     avatar: { ...fox, shirt: "#3d7a6b", bg: "#d8efe9" },
   },
   {
     handle: "anthroarts",
     name: "AnthroArts",
+    subscribers: 176_000,
     avatar: { ...blueWolf, shirt: "#5b3fa6", bg: "#e3e8fb" },
   },
   {
     handle: "pawprintanims",
     name: "PawPrintAnims",
+    subscribers: 938_000,
     avatar: { ...fox, shirt: "#d4412f", bg: "#fde6d6" },
   },
   {
     handle: "wuffgaming",
     name: "WuffGaming",
+    subscribers: 64_100,
     avatar: { ...protogen, shirt: "#1f2a44", bg: "#d9f6fc" },
   },
 ];
@@ -207,6 +221,8 @@ export function getChannel(handle: string): Channel {
 export const videos: Video[] = [
   {
     id: "blfc-day-1",
+    description:
+      "Day 1 of BLFC is in the books! We hit the fursuit parade with over 2,000 suiters, caught up with old friends and met a lot of new ones. Huge thanks to the parade staff and headless lounge volunteers.\n\nFind yourself in the crowd? Drop a timestamp in the comments!\n\n#BLFC #FursuitParade #ConVlog",
     title: "BLFC 2024: Day 1 Fursuit Parade!",
     channel: "fuzzbuttvlogs",
     views: 199_000,
@@ -223,6 +239,8 @@ export const videos: Video[] = [
   },
   {
     id: "drawing-anthro-101",
+    description:
+      "A beginner-friendly walkthrough for drawing anthro characters, from a gesture sketch to clean line art and flat colours. We cover head shapes, muzzles, ears and how to keep proportions consistent.\n\nBrushes: default round pen, 60% opacity sketch layer.\n\n#DrawingTutorial #AnthroArt",
     title: "Drawing Anthro Characters: Step-by-Step!",
     channel: "artbysparky",
     views: 4_700,
@@ -237,6 +255,8 @@ export const videos: Video[] = [
   },
   {
     id: "fursuit-head-5",
+    description:
+      "Part 5 of the head build: carving the foam base for the muzzle, attaching the ears and patterning the fur. Next episode we finally get to shaving and airbrushing!\n\nMaterials list is pinned in the comments.\n\n#FursuitMaking #FursuitHead",
     title: "Building My Fursuit Head: Part 5",
     channel: "wuffcreations",
     views: 153_000,
@@ -248,6 +268,8 @@ export const videos: Video[] = [
   },
   {
     id: "anthro-arena-1",
+    description:
+      "First look at Anthro Arena's new protogen class. Visor abilities are wild; the shield bash combo is absolutely broken right now.\n\n#AnthroArena #Protogen #Gaming",
     title: "Anthro Arena: Protogen Gameplay",
     channel: "gamerhyena",
     views: 1_700,
@@ -262,6 +284,8 @@ export const videos: Video[] = [
   },
   {
     id: "anthro-arena-2",
+    description:
+      "Climbing ranked with the protogen main. We go from Silver to Platinum in one sitting (with a lot of yelling).\n\n#AnthroArena #Ranked",
     title: "Anthro Arena: Protogen Ranked Climb",
     channel: "gamerhyena",
     views: 177_000,
@@ -284,6 +308,8 @@ export const videos: Video[] = [
   },
   {
     id: "why-were-here",
+    description:
+      "What draws people to the furry fandom? We spent a year at conventions, meetups and art streams talking to artists, fursuiters and first-timers about creativity, community and belonging.\n\nDirected by AnthroNation. Music licensed from independent furry musicians.\n\n#Documentary #FurryFandom",
     title: "The Furry Fandom: Why We're Here (Documentary)",
     channel: "anthronation",
     views: 1_200_000,
@@ -299,6 +325,8 @@ export const videos: Video[] = [
   },
   {
     id: "drawing-anthro-clothes",
+    description:
+      "Clothes make the character! This lesson focuses on hoodies: where folds form, how fabric drapes over fur and tails, and how to shade it quickly.\n\n#DrawingTutorial #ClothingFolds",
     title: "Drawing Anthro Characters: Hoodies & Clothing Folds",
     channel: "artbysparky",
     views: 115_000,
@@ -320,6 +348,8 @@ export const videos: Video[] = [
   },
   {
     id: "animation-short-1",
+    description:
+      "A lost fox kit tries to find the way home through an autumn forest. Hand-animated over eight months by the PawPrintAnims team.\n\n#Animation #ShortFilm",
     title: "Original Furry Animation Short: The Long Way Home",
     channel: "pawprintanims",
     views: 77_000,
@@ -331,6 +361,8 @@ export const videos: Video[] = [
   },
   {
     id: "merch-haul-1",
+    description:
+      "Opening EVERYTHING from the con dealers' den: pins, prints, badges, plushies and one very questionable tail keychain.\n\nAll artists are credited on screen, go support them!\n\n#MerchHaul #Unboxing",
     title: "Unboxing Furry Merch Haul!",
     channel: "merchmutt",
     views: 3_300_000,
@@ -342,6 +374,8 @@ export const videos: Video[] = [
   },
   {
     id: "dance-battle-finale",
+    description:
+      "The final round of the 2024 Furry Dance Battle! Two finalists, three songs, one trophy. Who do you think should have won?\n\n#DanceBattle #Fursuit",
     title: "Furry Dance Battle 2024 Finale!",
     channel: "dancepaws",
     views: 217_000,
@@ -364,6 +398,8 @@ export const videos: Video[] = [
   },
   {
     id: "why-were-here-2",
+    description:
+      "Part 2 of our documentary series. This time we sit down with long-time members of the fandom to talk about how the community has changed over the years.\n\n#Documentary #Interviews",
     title: "The Furry Fandom: Why We're Here (Part 2)",
     channel: "anthronation",
     views: 3_200,
@@ -378,6 +414,8 @@ export const videos: Video[] = [
   },
   {
     id: "animation-short-2",
+    description:
+      "Two roommates, one tiny apartment and far too many boxes. An original animated comedy short from FurTales.\n\n#Animation #Comedy",
     title: "Original Furry Animation Short: Moving Day",
     channel: "furtales",
     views: 71_000,
@@ -392,6 +430,8 @@ export const videos: Video[] = [
   },
   {
     id: "merch-haul-2",
+    description:
+      "You asked for it: more merch! This haul is all mail-order commissions from independent artists.\n\n#MerchHaul #SupportArtists",
     title: "Unboxing Furry Merch Haul! Pt. 2",
     channel: "merchmutt",
     views: 123_000,
@@ -406,6 +446,8 @@ export const videos: Video[] = [
   },
   {
     id: "dance-battle-semis",
+    description:
+      "Semi-finals of the 2024 Furry Dance Battle. Eight dancers, four head-to-head rounds and some incredible fursuit footwork.\n\n#DanceBattle",
     title: "Furry Dance Battle 2024: Semi-Finals",
     channel: "dancepaws",
     views: 179_000,
@@ -428,6 +470,8 @@ export const videos: Video[] = [
   },
   {
     id: "interview-sparky",
+    description:
+      "We sat down with Sparky Fox, the artist behind ArtBySparky, to talk about getting started, avoiding burnout and finding a style.\n\n#ArtistInterview",
     title: "Interview with Art Legend: Sparky Fox",
     channel: "anthroconnect",
     views: 4_800,
@@ -450,6 +494,8 @@ export const videos: Video[] = [
   },
   {
     id: "species-dutch-angel",
+    description:
+      "From classic western dragons to feathered sweethearts, we look at why dragons are one of the most popular species in the fandom.\n\n#SpeciesSpotlight #Dragons",
     title: "Species Spotlight: Why Everyone Loves Dragons",
     channel: "anthroarts",
     views: 58_000,
@@ -463,6 +509,8 @@ export const videos: Video[] = [
   },
   {
     id: "lofi-paws",
+    description:
+      "One hour of chill lo-fi beats to draw, study or nap to. Animated loop by PawPrintAnims.\n\n#Lofi #StudyMusic",
     title: "Lo-fi Paws: 1 Hour of Chill Beats to Draw To",
     channel: "pawprintanims",
     views: 842_000,
@@ -474,6 +522,8 @@ export const videos: Video[] = [
   },
   {
     id: "tail-tutorial",
+    description:
+      "Make a floppy, fluffy fursuit tail with just faux fur, stuffing and a needle and thread. Perfect first project!\n\n#FursuitTutorial #DIY",
     title: "Beginner Fursuit Tail Tutorial (No Sewing Machine!)",
     channel: "wuffcreations",
     views: 96_000,
@@ -485,6 +535,8 @@ export const videos: Video[] = [
   },
   {
     id: "protogen-visor",
+    description:
+      "Everything you need to wire up LED matrix eyes for a protogen visor: parts list, soldering, power and a simple animation script.\n\n#Protogen #LED #Electronics",
     title: "Protogen Visor LEDs: Complete Wiring Guide",
     channel: "wuffgaming",
     views: 311_000,
@@ -496,6 +548,8 @@ export const videos: Video[] = [
   },
   {
     id: "hyena-misunderstood",
+    description:
+      "Hyenas get a bad rap. Let's talk about why they're actually one of the coolest animals around, and why hyena fursonas are on the rise.\n\n#SpeciesFocus #Hyena",
     title: "Species Focus: Hyenas Are Misunderstood",
     channel: "gamerhyena",
     views: 26_000,
@@ -523,4 +577,120 @@ export function findVideos({
       video.title.toLowerCase().includes(needle) || channelName.includes(needle)
     );
   });
+}
+
+/** The signed-in (pretend) user, shown in the header and on comments. */
+export const viewer: Channel = {
+  handle: "you",
+  name: "You",
+  subscribers: 0,
+  avatar: { ...greyHusky, shirt: "#1f2a44", bg: "#e3e8f0" },
+};
+
+export function getVideo(id: string): Video | undefined {
+  return videos.find((video) => video.id === id);
+}
+
+/** Other videos, most shared categories first, ties kept in feed order. */
+export function relatedVideos(video: Video, limit = 12): Video[] {
+  const shared = (other: Video) =>
+    other.categories.filter((c) => video.categories.includes(c)).length;
+  return videos
+    .filter((other) => other.id !== video.id)
+    .map((other, index) => ({ other, index, score: shared(other) }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .slice(0, limit)
+    .map(({ other }) => other);
+}
+
+/** "14:21" or "1:02:14" → seconds. */
+export function parseDuration(duration: string): number {
+  return duration
+    .split(":")
+    .reduce((total, part) => total * 60 + Number(part), 0);
+}
+
+export type Comment = {
+  id: string;
+  author: string;
+  text: string;
+  likes: number;
+  /** Minutes since posting; used for "Newest first" sorting. */
+  age: number;
+  published: string;
+};
+
+const commentPool: Omit<Comment, "id">[] = [
+  {
+    author: "anthroarts",
+    text: "The colours in this are incredible. Saving this for reference!",
+    likes: 1_200,
+    age: 50,
+    published: "50 minutes ago",
+  },
+  {
+    author: "pawprintanims",
+    text: "Instant like. You always put so much love into these.",
+    likes: 842,
+    age: 120,
+    published: "2 hours ago",
+  },
+  {
+    author: "wuffgaming",
+    text: "Who else is watching this at 3am instead of sleeping? 🐾",
+    likes: 530,
+    age: 30,
+    published: "30 minutes ago",
+  },
+  {
+    author: "dancepaws",
+    text: "The energy here is unmatched. Can't wait for the next one!",
+    likes: 311,
+    age: 300,
+    published: "5 hours ago",
+  },
+  {
+    author: "merchmutt",
+    text: "Came for the video, stayed for the wholesome comment section.",
+    likes: 2_400,
+    age: 1_440,
+    published: "1 day ago",
+  },
+  {
+    author: "furtales",
+    text: "This got me to finally start my own project. Thank you!",
+    likes: 97,
+    age: 10,
+    published: "10 minutes ago",
+  },
+  {
+    author: "gamerhyena",
+    text: "Hyena representation when? 👀 (great video though)",
+    likes: 64,
+    age: 5,
+    published: "5 minutes ago",
+  },
+  {
+    author: "anthroconnect",
+    text: "Would love a behind-the-scenes follow-up on how this was made.",
+    likes: 188,
+    age: 720,
+    published: "12 hours ago",
+  },
+  {
+    author: "artbysparky",
+    text: "Love seeing the community grow like this. 💛",
+    likes: 403,
+    age: 2_880,
+    published: "2 days ago",
+  },
+];
+
+/** A deterministic handful of comments for a video. */
+export function commentsFor(video: Video): Comment[] {
+  const seed = [...video.id].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+  return Array.from({ length: 6 }, (_, i) => {
+    const pick = commentPool[(seed + i * 4) % commentPool.length];
+    return { ...pick, id: `${video.id}-c${i}` };
+  }).filter((comment) => comment.author !== video.channel);
 }

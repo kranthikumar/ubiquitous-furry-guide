@@ -12,7 +12,6 @@ export function VideoCard({ video }: { video: Video }) {
     <article className="group flex flex-col gap-3">
       <Link
         href={href}
-        prefetch={false}
         tabIndex={-1}
         aria-hidden="true"
         className="relative block aspect-video overflow-hidden rounded-xl bg-chip"
@@ -28,7 +27,7 @@ export function VideoCard({ video }: { video: Video }) {
         <Avatar channel={channel} />
         <div className="min-w-0">
           <h3 className="line-clamp-2 text-[15px] leading-5 font-medium text-ink">
-            <Link href={href} prefetch={false} title={video.title}>
+            <Link href={href} title={video.title}>
               {video.title}
             </Link>
           </h3>

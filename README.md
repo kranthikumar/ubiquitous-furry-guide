@@ -22,7 +22,12 @@ Other scripts: `npm run build`, `npm run start`, `npm run lint`,
 - Home page with a responsive video grid, category chips (`?category=`)
   and search (`?q=`) across titles and channel names.
 - Full sidebar at ≥1024px, icon rail at 768–1023px, bottom tab bar on phones.
+- Watch pages (`/watch/[id]`, prerendered for every video) with a simulated
+  player (play/pause, seek, captions, next, full screen; keyboard shortcuts
+  k/space, j/l, arrows, m, c, f), subscribe and share buttons, expandable
+  description, comments you can add, like and sort, and related videos.
 - Hamburger menu drawer (native `<dialog>`: Escape, backdrop click and focus
   handling come for free).
 
-Other links lead to a "not built yet" page.
+Other links lead to a "not built yet" page. Nothing is persisted: comments,
+likes and subscriptions reset on reload.

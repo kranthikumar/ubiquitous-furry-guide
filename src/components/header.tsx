@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ArrowLeft, Bell, Menu, Search, Video } from "lucide-react";
-import { getChannel } from "@/lib/data";
+import { viewer } from "@/lib/data";
 import { Avatar } from "./avatar";
 import { PawIcon } from "./icons";
 import { Logo } from "./logo";
@@ -86,7 +86,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
             className="ml-1 rounded-full"
             aria-label="Your account"
           >
-            <Avatar channel={getChannel("fuzzbuttvlogs")} className="size-8" />
+            <Avatar channel={viewer} className="size-8" />
           </button>
         </div>
       </header>

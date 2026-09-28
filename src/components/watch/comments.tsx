@@ -1,0 +1,203 @@
+"use client";
+
+import { useId, useState } from "react";
+import { Check, ListFilter, ThumbsUp } from "lucide-react";
+import { getChannel, viewer, type Comment } from "@/lib/data";
+import { Avatar } from "../avatar";
+
+const compact = new Intl.NumberFormat("en", { notation: "compact" });
+
+type Sort = "top" | "newest";
+const sortLabels: Record<Sort, string> = {
+  top: "Top comments",
+  newest: "Newest first",
+};
+
+function authorOf(handle: string) {
+  return handle === viewer.handle ? viewer : getChannel(handle);
+}
+
+function SortMenu({
+  sort,
+  onChange,
+}: {
+  sort: Sort;
+  onChange: (sort: Sort) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const menuId = useId();
+  return (
+    <div
+      className="relative"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
+      onKeyDown={(event) => event.key === "Escape" && setOpen(false)}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-controls={menuId}
+        className="flex items-center gap-2 rounded-full px-2 py-1 text-sm font-medium text-ink hover:bg-chip"
+      >
+        <ListFilter className="size-5" strokeWidth={1.75} />
+        Sort by
+      </button>
+      {open && (
+        <ul
+          id={menuId}
+          className="absolute top-full left-0 z-20 mt-1 w-44 rounded-xl border border-line bg-white py-2 shadow-lg"
+        >
+          {(Object.keys(sortLabels) as Sort[]).map((option) => (
+            <li key={option}>
+              <button
+                type="button"
+                aria-pressed={sort === option}
+                onClick={() => {
+                  onChange(option);
+                  setOpen(false);
+                }}
+                className="flex w-full items-center justify-between px-4 py-2 text-left text-sm text-ink hover:bg-chip"
+              >
+                {sortLabels[option]}
+                {sort === option && <Check className="size-4" />}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function CommentItem({ comment }: { comment: Comment }) {
+  const [liked, setLiked] = useState(false);
+  const author = authorOf(comment.author);
+  return (
+    <li className="flex gap-3">
+      <Avatar channel={author} className="size-10" />
+      <div className="min-w-0">
+        <p className="text-xs">
+          <span className="font-semibold text-ink">@{author.handle}</span>{" "}
+          <span className="text-muted">{comment.published}</span>
+        </p>
+        <p className="mt-0.5 text-sm break-words whitespace-pre-line text-ink">
+          {comment.text}
+        </p>
+        <button
+          type="button"
+          onClick={() => setLiked((l) => !l)}
+          aria-pressed={liked}
+          aria-label={liked ? "Unlike" : "Like"}
+          className="-ml-2 mt-1 flex items-center gap-1.5 rounded-full px-2 py-1 text-xs text-muted hover:bg-chip"
+        >
+          <ThumbsUp
+            className={`size-4 ${liked ? "fill-current text-ink" : ""}`}
+            strokeWidth={1.75}
+          />
+          {compact.format(comment.likes + (liked ? 1 : 0))}
+        </button>
+      </div>
+    </li>
+  );
+}
+
+function AddComment({ onAdd }: { onAdd: (text: string) => void }) {
+  const [text, setText] = useState("");
+  const [active, setActive] = useState(false);
+  const inputId = useId();
+  const reset = () => {
+    setText("");
+    setActive(false);
+  };
+  return (
+    <form
+      className="flex gap-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!text.trim()) return;
+        onAdd(text.trim());
+        reset();
+      }}
+    >
+      <Avatar channel={viewer} className="size-10" />
+      <div className="min-w-0 flex-1">
+        <label htmlFor={inputId} className="sr-only">
+          Add a comment
+        </label>
+        <input
+          id={inputId}
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          onFocus={() => setActive(true)}
+          placeholder="Add a comment..."
+          autoComplete="off"
+          className="w-full border-b border-line bg-transparent py-1.5 text-base text-ink placeholder:text-muted focus:border-ink focus:outline-none sm:text-sm"
+        />
+        {active && (
+          <div className="mt-2 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={reset}
+              className="rounded-full px-4 py-2 text-sm font-medium text-ink hover:bg-chip"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!text.trim()}
+              className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:bg-chip disabled:text-muted"
+            >
+              Comment
+            </button>
+          </div>
+        )}
+      </div>
+    </form>
+  );
+}
+
+/** Comments are kept in memory only; they reset when the page reloads. */
+export function Comments({ initial }: { initial: Comment[] }) {
+  const [comments, setComments] = useState(initial);
+  const [sort, setSort] = useState<Sort>("top");
+  // Your own comments stay pinned on top, as on YouTube.
+  const mine = (c: Comment) => (c.author === viewer.handle ? 0 : 1);
+  const sorted = [...comments].sort(
+    (a, b) =>
+      mine(a) - mine(b) ||
+      (sort === "top" ? b.likes - a.likes : 0) ||
+      a.age - b.age,
+  );
+
+  const add = (text: string) =>
+    setComments((current) => [
+      {
+        id: `new-${Date.now()}`,
+        author: viewer.handle,
+        text,
+        likes: 0,
+        age: 0,
+        published: "Just now",
+      },
+      ...current,
+    ]);
+
+  return (
+    <section aria-labelledby="comments-heading" className="flex flex-col gap-6">
+      <div className="flex items-center gap-6">
+        <h2 id="comments-heading" className="text-xl font-bold text-ink">
+          {comments.length} Comments
+        </h2>
+        <SortMenu sort={sort} onChange={setSort} />
+      </div>
+      <AddComment onAdd={add} />
+      <ul className="flex flex-col gap-5">
+        {sorted.map((comment) => (
+          <CommentItem key={comment.id} comment={comment} />
+        ))}
+      </ul>
+    </section>
+  );
+}

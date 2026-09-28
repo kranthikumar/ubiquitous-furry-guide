@@ -6,10 +6,11 @@ export default function NotFound() {
     <div className="flex flex-col items-center gap-3 px-4 py-24 text-center">
       <PawIcon className="size-12 text-muted" />
       <h1 className="text-lg font-medium text-ink">
-        This page hasn’t been built yet
+        We couldn’t find that page
       </h1>
       <p className="text-sm text-muted">
-        FurryTube is a work in progress. Only the home page exists so far.
+        It may not exist, or it hasn’t been built yet. FurryTube is a work in
+        progress.
       </p>
       <Link
         href="/"
