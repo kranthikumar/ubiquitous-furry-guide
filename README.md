@@ -36,17 +36,27 @@ likes and subscriptions reset on reload.
 
 The schema lives in `src/db/schema.ts` (channels, videos, comments) and
 migrations in `drizzle/`. The pages still read the fake data in
-`src/lib/data.ts`; `npm run db:seed` copies that data into the database.
+`src/lib/data.ts`; the seed step copies that data into the database.
 
-1. `cp .env.example .env.local` and fill in `DATABASE_URL` (Supabase
-   transaction pooler, port 6543) and, ideally, `DIRECT_URL` (session pooler,
-   port 5432) from Supabase → Connect → ORMs → Drizzle.
-2. `npm run db:migrate` creates the tables (with row-level security on, so
-   Supabase's public Data API can't touch them).
-3. `npm run db:seed` loads the seed data. Safe to re-run.
+### On Vercel (how this project is deployed)
 
-After changing the schema: `npm run db:generate` to write a new migration,
-then `npm run db:migrate`. `npm run db:studio` opens a table browser.
+Production deploys run `scripts/predeploy.ts` before `next build` (via the
+`vercel-build` script): it applies pending migrations and seeds the database
+if it is empty. Preview deploys skip it. It needs these environment
+variables, scoped to Production:
+
+- `DIRECT_URL`: Supabase session pooler (port 5432), used for migrations.
+- `DATABASE_URL`: Supabase transaction pooler (port 6543), used by the app.
+
+Tables have row-level security enabled, so Supabase's public Data API can't
+touch them; the app connects directly and is unaffected.
+
+### Locally (optional)
+
+`cp .env.example .env.local`, fill in the same variables, then
+`npm run db:migrate` and `npm run db:seed` (which replaces all data with the
+seed data). After changing the schema run `npm run db:generate` to write a
+new migration. `npm run db:studio` opens a table browser.
 
 In app code, import `db` from `@/db` (server components and server actions
 only).
