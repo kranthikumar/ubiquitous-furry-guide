@@ -42,11 +42,12 @@ migrations in `drizzle/`. The pages still read the fake data in
 
 Production deploys run `scripts/predeploy.ts` before `next build` (via the
 `vercel-build` script): it applies pending migrations and seeds the database
-if it is empty. Preview deploys skip it. It needs these environment
-variables, scoped to Production:
+if it is empty. Preview deploys skip it.
 
-- `DIRECT_URL`: Supabase session pooler (port 5432), used for migrations.
-- `DATABASE_URL`: Supabase transaction pooler (port 6543), used by the app.
+Connection strings come from the Supabase ↔ Vercel integration
+(`POSTGRES_URL` for the app, `POSTGRES_URL_NON_POOLING` for migrations), or
+from `DATABASE_URL` / `DIRECT_URL` if you set those yourself; see
+`src/db/url.ts`. The build log shows which variable was used.
 
 Tables have row-level security enabled, so Supabase's public Data API can't
 touch them; the app connects directly and is unaffected.

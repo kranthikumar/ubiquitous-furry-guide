@@ -7,20 +7,16 @@
  */
 import { loadEnvConfig } from "@next/env";
 import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { connectForScripts } from "../src/db/connect";
 import * as schema from "../src/db/schema";
 import { seed } from "../src/db/seed";
 
 async function main() {
   loadEnvConfig(process.cwd());
-  const url = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
-  if (!url) throw new Error("Set DIRECT_URL or DATABASE_URL in .env.local");
-
-  const client = postgres(url, {
-    prepare: false,
-    max: 1,
-    onnotice: () => {},
-  });
+  const connection = await connectForScripts();
+  if (!connection)
+    throw new Error("Set DIRECT_URL or DATABASE_URL in .env.local");
+  const { client } = connection;
   try {
     await seed(drizzle(client, { schema }));
     const [counts] = await client`

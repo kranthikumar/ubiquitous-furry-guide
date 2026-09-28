@@ -2,11 +2,12 @@ import "server-only";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
+import { APP_URL_VARS, urlsFrom } from "./url";
 
-const url = process.env.DATABASE_URL;
+const [[, url] = []] = urlsFrom(APP_URL_VARS);
 if (!url) {
   throw new Error(
-    "DATABASE_URL is not set. Copy .env.example to .env.local and fill it in.",
+    `No database URL: set ${APP_URL_VARS.join(" or ")} (see .env.example).`,
   );
 }
 

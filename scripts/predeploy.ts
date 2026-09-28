@@ -5,7 +5,7 @@
  */
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
-import postgres from "postgres";
+import { connectForScripts } from "../src/db/connect";
 import * as schema from "../src/db/schema";
 import { seedIfEmpty } from "../src/db/seed";
 
@@ -16,18 +16,15 @@ async function main() {
     log(`skipped (VERCEL_ENV=${process.env.VERCEL_ENV ?? "unset"})`);
     return;
   }
-  const url = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
-  if (!url) {
+  const connection = await connectForScripts();
+  if (!connection) {
     // Pages don't read from the database yet, so don't block the deploy.
-    log("skipped: DIRECT_URL is not set in Vercel's environment variables");
+    log("skipped: no database URL in Vercel's environment variables");
     return;
   }
+  const { client, source } = connection;
+  log(`connected using ${source}`);
 
-  const client = postgres(url, {
-    prepare: false,
-    max: 1,
-    onnotice: () => {},
-  });
   try {
     const db = drizzle(client, { schema });
     await migrate(db, { migrationsFolder: "drizzle" });
