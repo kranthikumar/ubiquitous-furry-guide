@@ -6,34 +6,19 @@ import { ChannelRow } from "@/components/watch/channel-row";
 import { Comments } from "@/components/watch/comments";
 import { Description } from "@/components/watch/description";
 import { Player } from "@/components/watch/player";
-import {
-  commentsFor,
-  getChannel,
-  getVideo,
-  parseDuration,
-  relatedVideos,
-  videos,
-} from "@/lib/data";
-
-// Every video is known at build time, so prerender them all and 404 the rest.
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return videos.map((video) => ({ id: video.id }));
-}
+import { getComments, getRelatedVideos, getVideo } from "@/db/queries";
+import { formatCount } from "@/lib/format";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/watch/[id]">): Promise<Metadata> {
-  const video = getVideo((await params).id);
+  const video = await getVideo((await params).id);
   if (!video) return {};
   return {
     title: video.title,
     description: video.description.split("\n")[0],
   };
 }
-
-const compact = new Intl.NumberFormat("en", { notation: "compact" });
 
 /** Fake captions: the description's sentences, minus hashtags. */
 function captionsFrom(description: string) {
@@ -45,19 +30,22 @@ function captionsFrom(description: string) {
 }
 
 export default async function WatchPage({ params }: PageProps<"/watch/[id]">) {
-  const video = getVideo((await params).id);
+  const { id } = await params;
+  const video = await getVideo(id);
   if (!video) notFound();
 
-  const channel = getChannel(video.channel);
-  const related = relatedVideos(video);
+  const [related, comments] = await Promise.all([
+    getRelatedVideos(id),
+    getComments(id),
+  ]);
 
   return (
     <div className="mx-auto grid max-w-[112rem] gap-6 sm:px-6 sm:pt-4 xl:grid-cols-[minmax(0,1fr)_26rem] xl:grid-rows-[auto_1fr] 2xl:grid-cols-[minmax(0,1fr)_30rem]">
       <div className="flex min-w-0 flex-col gap-3">
         <Player
           key={video.id}
-          frame={<Thumbnail video={video} />}
-          duration={parseDuration(video.duration)}
+          frame={<Thumbnail id={video.id} art={video.thumbnailArt} />}
+          duration={video.durationSeconds}
           captions={captionsFrom(video.description)}
           nextHref={related[0] && `/watch/${related[0].id}`}
         />
@@ -65,10 +53,10 @@ export default async function WatchPage({ params }: PageProps<"/watch/[id]">) {
           <h1 className="text-lg leading-snug font-bold text-ink sm:text-xl">
             {video.title}
           </h1>
-          <ChannelRow channel={channel} />
+          <ChannelRow channel={video.channel} />
           <Description
             key={video.id}
-            meta={`${compact.format(video.views)} views • ${video.published}`}
+            meta={`${formatCount(video.views)} views • ${video.published}`}
             text={video.description}
           />
         </div>
@@ -89,7 +77,7 @@ export default async function WatchPage({ params }: PageProps<"/watch/[id]">) {
       </aside>
 
       <div className="px-4 pb-4 sm:px-0">
-        <Comments key={video.id} initial={commentsFor(video)} />
+        <Comments key={video.id} videoId={video.id} comments={comments} />
       </div>
     </div>
   );

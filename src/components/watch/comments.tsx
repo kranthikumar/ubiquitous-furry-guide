@@ -1,21 +1,19 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useOptimistic, useState, useTransition } from "react";
 import { Check, ListFilter, ThumbsUp } from "lucide-react";
-import { getChannel, viewer, type Comment } from "@/lib/data";
+import { addComment } from "@/app/watch/[id]/actions";
+import { viewer } from "@/lib/data";
+import { formatCount } from "@/lib/format";
+import { MAX_COMMENT_LENGTH } from "@/lib/limits";
+import type { CommentView } from "@/lib/types";
 import { Avatar } from "../avatar";
-
-const compact = new Intl.NumberFormat("en", { notation: "compact" });
 
 type Sort = "top" | "newest";
 const sortLabels: Record<Sort, string> = {
   top: "Top comments",
   newest: "Newest first",
 };
-
-function authorOf(handle: string) {
-  return handle === viewer.handle ? viewer : getChannel(handle);
-}
 
 function SortMenu({
   sort,
@@ -71,19 +69,29 @@ function SortMenu({
   );
 }
 
-function CommentItem({ comment }: { comment: Comment }) {
+function CommentItem({
+  comment,
+  pending,
+}: {
+  comment: CommentView;
+  pending: boolean;
+}) {
+  // Likes aren't saved: without accounts they would be trivial to inflate.
   const [liked, setLiked] = useState(false);
-  const author = authorOf(comment.author);
+  const { author } = comment;
   return (
-    <li className="flex gap-3">
+    <li
+      className={`flex gap-3 transition-opacity ${pending ? "opacity-60" : ""}`}
+      aria-busy={pending || undefined}
+    >
       <Avatar channel={author} className="size-10" />
       <div className="min-w-0">
         <p className="text-xs">
-          <span className="font-semibold text-ink">@{author.handle}</span>{" "}
+          <span className="font-semibold text-ink">@{author.id}</span>{" "}
           <span className="text-muted">{comment.published}</span>
         </p>
         <p className="mt-0.5 text-sm break-words whitespace-pre-line text-ink">
-          {comment.text}
+          {comment.body}
         </p>
         <button
           type="button"
@@ -96,14 +104,19 @@ function CommentItem({ comment }: { comment: Comment }) {
             className={`size-4 ${liked ? "fill-current text-ink" : ""}`}
             strokeWidth={1.75}
           />
-          {compact.format(comment.likes + (liked ? 1 : 0))}
+          {formatCount(comment.likes + (liked ? 1 : 0))}
         </button>
       </div>
     </li>
   );
 }
 
-function AddComment({ onAdd }: { onAdd: (text: string) => void }) {
+function AddComment({
+  onAdd,
+}: {
+  /** Resolves to whether the comment was saved. */
+  onAdd: (text: string) => Promise<boolean>;
+}) {
   const [text, setText] = useState("");
   const [active, setActive] = useState(false);
   const inputId = useId();
@@ -114,11 +127,16 @@ function AddComment({ onAdd }: { onAdd: (text: string) => void }) {
   return (
     <form
       className="flex gap-3"
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
-        if (!text.trim()) return;
-        onAdd(text.trim());
+        const trimmed = text.trim();
+        if (!trimmed) return;
         reset();
+        // Put the text back so nothing is lost if saving failed.
+        if (!(await onAdd(trimmed))) {
+          setText(trimmed);
+          setActive(true);
+        }
       }}
     >
       <Avatar channel={viewer} className="size-10" />
@@ -133,6 +151,7 @@ function AddComment({ onAdd }: { onAdd: (text: string) => void }) {
           onFocus={() => setActive(true)}
           placeholder="Add a comment..."
           autoComplete="off"
+          maxLength={MAX_COMMENT_LENGTH}
           className="w-full border-b border-line bg-transparent py-1.5 text-base text-ink placeholder:text-muted focus:border-ink focus:outline-none sm:text-sm"
         />
         {active && (
@@ -158,44 +177,81 @@ function AddComment({ onAdd }: { onAdd: (text: string) => void }) {
   );
 }
 
-/** Comments are kept in memory only; they reset when the page reloads. */
-export function Comments({ initial }: { initial: Comment[] }) {
-  const [comments, setComments] = useState(initial);
+/**
+ * Comments come from the database. A new one appears straight away
+ * (optimistically) while the server action saves it; the page then
+ * re-renders with the saved copy.
+ */
+export function Comments({
+  videoId,
+  comments,
+}: {
+  videoId: string;
+  comments: CommentView[];
+}) {
+  const [optimistic, addOptimistic] = useOptimistic(
+    comments,
+    (current, added: CommentView) => [added, ...current],
+  );
+  const [, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<Sort>("top");
+
   // Your own comments stay pinned on top, as on YouTube.
-  const mine = (c: Comment) => (c.author === viewer.handle ? 0 : 1);
-  const sorted = [...comments].sort(
+  const mine = (c: CommentView) => (c.author.id === viewer.handle ? 0 : 1);
+  const sorted = [...optimistic].sort(
     (a, b) =>
       mine(a) - mine(b) ||
       (sort === "top" ? b.likes - a.likes : 0) ||
-      a.age - b.age,
+      b.createdAt - a.createdAt,
   );
 
   const add = (text: string) =>
-    setComments((current) => [
-      {
-        id: `new-${Date.now()}`,
-        author: viewer.handle,
-        text,
-        likes: 0,
-        age: 0,
-        published: "Just now",
-      },
-      ...current,
-    ]);
+    new Promise<boolean>((resolve) =>
+      startTransition(async () => {
+        setError(null);
+        addOptimistic({
+          id: `pending-${Date.now()}`,
+          body: text,
+          likes: 0,
+          published: "Just now",
+          createdAt: Date.now(),
+          author: {
+            id: viewer.handle,
+            name: viewer.name,
+            avatar: viewer.avatar,
+          },
+        });
+        const result = await addComment(videoId, text).catch(() => ({
+          ok: false as const,
+          error: "Couldn't post your comment. Please try again.",
+        }));
+        if (!result.ok) setError(result.error);
+        resolve(result.ok);
+      }),
+    );
 
   return (
     <section aria-labelledby="comments-heading" className="flex flex-col gap-6">
       <div className="flex items-center gap-6">
         <h2 id="comments-heading" className="text-xl font-bold text-ink">
-          {comments.length} Comments
+          {optimistic.length} Comments
         </h2>
         <SortMenu sort={sort} onChange={setSort} />
       </div>
       <AddComment onAdd={add} />
+      {error && (
+        <p role="alert" className="-mt-3 text-sm text-paw">
+          {error}
+        </p>
+      )}
       <ul className="flex flex-col gap-5">
         {sorted.map((comment) => (
-          <CommentItem key={comment.id} comment={comment} />
+          <CommentItem
+            key={comment.id}
+            comment={comment}
+            pending={comment.id.startsWith("pending-")}
+          />
         ))}
       </ul>
     </section>

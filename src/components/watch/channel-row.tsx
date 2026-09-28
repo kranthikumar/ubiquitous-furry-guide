@@ -3,12 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { BellRing, Check, Share2 } from "lucide-react";
-import type { Channel } from "@/lib/data";
+import { formatCount } from "@/lib/format";
+import type { ChannelSummary } from "@/lib/types";
 import { Avatar } from "../avatar";
 
-const compact = new Intl.NumberFormat("en", { notation: "compact" });
-
-export function ChannelRow({ channel }: { channel: Channel }) {
+export function ChannelRow({ channel }: { channel: ChannelSummary }) {
   const [subscribed, setSubscribed] = useState(false);
   const [copied, setCopied] = useState(false);
   const subscribers = channel.subscribers + (subscribed ? 1 : 0);
@@ -26,7 +25,7 @@ export function ChannelRow({ channel }: { channel: Channel }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-3">
       <Link
-        href={`/channel/${channel.handle}`}
+        href={`/channel/${channel.id}`}
         prefetch={false}
         className="flex min-w-0 items-center gap-3"
       >
@@ -36,13 +35,13 @@ export function ChannelRow({ channel }: { channel: Channel }) {
             {channel.name}
           </span>
           <span className="block text-xs text-muted">
-            {compact.format(subscribers)} subscribers
+            {formatCount(subscribers)} subscribers
           </span>
         </span>
       </Link>
       <div className="flex items-center gap-2">
         <Link
-          href={`/channel/${channel.handle}/join`}
+          href={`/channel/${channel.id}/join`}
           prefetch={false}
           className="rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink hover:bg-chip"
         >

@@ -1,11 +1,11 @@
-import type { Channel } from "@/lib/data";
+import type { AvatarArt } from "@/db/schema";
 import { CritterFigure } from "./critter";
 
 export function Avatar({
   channel,
   className = "size-9",
 }: {
-  channel: Channel;
+  channel: { avatar: AvatarArt };
   className?: string;
 }) {
   const { bg, ...critter } = channel.avatar;

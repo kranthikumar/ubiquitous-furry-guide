@@ -2,7 +2,8 @@ import Link from "next/link";
 import { SearchX } from "lucide-react";
 import { CategoryChips } from "@/components/category-chips";
 import { VideoCard } from "@/components/video-card";
-import { categories, findVideos } from "@/lib/data";
+import { listVideos } from "@/db/queries";
+import { categories } from "@/lib/data";
 
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -15,7 +16,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const category = categories.some((c) => c.slug === requested)
     ? requested
     : undefined;
-  const results = findVideos({ query, category });
+  const results = await listVideos({ query, category });
 
   return (
     <>

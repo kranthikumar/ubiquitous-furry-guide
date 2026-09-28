@@ -1,4 +1,8 @@
 // Seed data for the dummy site. Everything here is made up.
+//
+// The database is filled from this file (src/db/seed.ts); pages read the
+// database, not this file. The UI still uses a few static pieces directly:
+// categories, followed channels in the sidebar, and the guest viewer.
 
 export type Species =
   | "fox"
@@ -561,24 +565,6 @@ export const videos: Video[] = [
   },
 ];
 
-export function findVideos({
-  query,
-  category,
-}: {
-  query?: string;
-  category?: string;
-}): Video[] {
-  const needle = query?.trim().toLowerCase();
-  return videos.filter((video) => {
-    if (category && !video.categories.includes(category)) return false;
-    if (!needle) return true;
-    const channelName = getChannel(video.channel).name.toLowerCase();
-    return (
-      video.title.toLowerCase().includes(needle) || channelName.includes(needle)
-    );
-  });
-}
-
 /** The signed-in (pretend) user, shown in the header and on comments. */
 export const viewer: Channel = {
   handle: "you",
@@ -586,22 +572,6 @@ export const viewer: Channel = {
   subscribers: 0,
   avatar: { ...greyHusky, shirt: "#1f2a44", bg: "#e3e8f0" },
 };
-
-export function getVideo(id: string): Video | undefined {
-  return videos.find((video) => video.id === id);
-}
-
-/** Other videos, most shared categories first, ties kept in feed order. */
-export function relatedVideos(video: Video, limit = 12): Video[] {
-  const shared = (other: Video) =>
-    other.categories.filter((c) => video.categories.includes(c)).length;
-  return videos
-    .filter((other) => other.id !== video.id)
-    .map((other, index) => ({ other, index, score: shared(other) }))
-    .sort((a, b) => b.score - a.score || a.index - b.index)
-    .slice(0, limit)
-    .map(({ other }) => other);
-}
 
 /** "14:21" or "1:02:14" → seconds. */
 export function parseDuration(duration: string): number {

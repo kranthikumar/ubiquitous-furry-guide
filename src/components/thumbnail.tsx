@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import type { Scene, Video } from "@/lib/data";
+import type { ThumbnailArt } from "@/db/schema";
+import type { Scene } from "@/lib/data";
 import { CritterFigure } from "./critter";
 
 const W = 320;
@@ -296,8 +297,18 @@ function Caption({ lines }: { lines: string[] }) {
   );
 }
 
-export function Thumbnail({ video }: { video: Video }) {
-  const gid = (name: string) => `thumb-${video.id}-${name}`;
+/**
+ * Placeholder artwork drawn from `art`; a blank frame when there is none.
+ * `id` keeps gradient ids unique when several thumbnails share a page.
+ */
+export function Thumbnail({
+  id,
+  art,
+}: {
+  id: string;
+  art: ThumbnailArt | null;
+}) {
+  const gid = (name: string) => `thumb-${id}-${name}`;
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
@@ -305,12 +316,18 @@ export function Thumbnail({ video }: { video: Video }) {
       className="block size-full"
       aria-hidden="true"
     >
-      <Backdrop scene={video.scene} gid={gid} />
-      {video.critters.map((critter, i) => (
-        <CritterFigure key={i} critter={critter} />
-      ))}
-      <Foreground scene={video.scene} />
-      {video.caption && <Caption lines={video.caption} />}
+      {art ? (
+        <>
+          <Backdrop scene={art.scene} gid={gid} />
+          {art.critters.map((critter, i) => (
+            <CritterFigure key={i} critter={critter} />
+          ))}
+          <Foreground scene={art.scene} />
+          {art.caption && <Caption lines={art.caption} />}
+        </>
+      ) : (
+        <rect width={W} height={H} fill="#1f2a44" />
+      )}
     </svg>
   );
 }

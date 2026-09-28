@@ -22,21 +22,29 @@ Other scripts: `npm run build`, `npm run start`, `npm run lint`,
 - Home page with a responsive video grid, category chips (`?category=`)
   and search (`?q=`) across titles and channel names.
 - Full sidebar at ≥1024px, icon rail at 768–1023px, bottom tab bar on phones.
-- Watch pages (`/watch/[id]`, prerendered for every video) with a simulated
+- Watch pages (`/watch/[id]`) with a simulated
   player (play/pause, seek, captions, next, full screen; keyboard shortcuts
   k/space, j/l, arrows, m, c, f), subscribe and share buttons, expandable
-  description, comments you can add, like and sort, and related videos.
+  description, comments you can add (saved), like and sort, and related
+  videos.
 - Hamburger menu drawer (native `<dialog>`: Escape, backdrop click and focus
   handling come for free).
 
-Other links lead to a "not built yet" page. Nothing is persisted: comments,
-likes and subscriptions reset on reload.
+Other links lead to a "not built yet" page. Videos, channels and comments
+come from the database (see below); likes and subscriptions reset on reload.
 
 ## Database (Supabase Postgres + Drizzle)
 
 The schema lives in `src/db/schema.ts` (channels, videos, comments) and
-migrations in `drizzle/`. The pages still read the fake data in
-`src/lib/data.ts`; the seed step copies that data into the database.
+migrations in `drizzle/`, and the queries the pages use in
+`src/db/queries.ts`. Pages render per request, so edits made in Supabase's
+Table Editor show up immediately. `src/lib/data.ts` is only the seed data
+(plus a few static UI pieces: categories, sidebar channels, the guest user).
+
+Comments are saved through a server action
+(`src/app/watch/[id]/actions.ts`). There are no accounts yet, so everyone
+posts as the shared guest "@you" channel; likes and subscriptions are not
+saved.
 
 ### On Vercel (how this project is deployed)
 
