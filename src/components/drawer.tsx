@@ -10,6 +10,7 @@ import {
   ShoppingBag,
   SquarePlay,
 } from "lucide-react";
+import type { ChannelBadge } from "@/lib/types";
 import { PawIcon } from "./icons";
 import { Logo } from "./logo";
 import {
@@ -60,9 +61,11 @@ const reportNav: NavItem[] = [
 export function Drawer({
   open,
   onClose,
+  followed,
 }: {
   open: boolean;
   onClose: () => void;
+  followed: ChannelBadge[];
 }) {
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -106,7 +109,7 @@ export function Drawer({
           <NavSection tone="dark">
             <NavItems items={libraryNav} tone="dark" />
           </NavSection>
-          <FollowedChannels tone="dark" />
+          <FollowedChannels channels={followed} tone="dark" />
         </div>
 
         <NavSection tone="dark">

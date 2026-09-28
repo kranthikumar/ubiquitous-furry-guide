@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { ChannelBadge } from "@/lib/types";
 import {
   FollowedChannels,
   libraryNav,
@@ -14,7 +15,7 @@ import {
 const railItems = [...primaryNav, { ...libraryNav[0], label: "You" }];
 
 /** Full sidebar (≥1024px) and compact icon rail (768–1023px). Hidden on phones. */
-export function Sidebar() {
+export function Sidebar({ followed }: { followed: ChannelBadge[] }) {
   const pathname = usePathname();
   return (
     <>
@@ -50,7 +51,7 @@ export function Sidebar() {
         <NavSection>
           <NavItems items={libraryNav} />
         </NavSection>
-        <FollowedChannels />
+        <FollowedChannels channels={followed} />
         <SiteFooter />
       </nav>
     </>

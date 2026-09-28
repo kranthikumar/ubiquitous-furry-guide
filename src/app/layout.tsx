@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Roboto } from "next/font/google";
-import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 
 const roboto = Roboto({
@@ -25,9 +24,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${roboto.variable} antialiased`}>
-      <body>
-        <AppShell>{children}</AppShell>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

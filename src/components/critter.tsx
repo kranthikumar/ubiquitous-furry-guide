@@ -1,4 +1,4 @@
-import type { Critter as CritterData, Species } from "@/lib/data";
+import type { Critter as CritterData, Species } from "@/lib/art";
 
 const INK = "#1f1a17";
 const PAPER = "#fbf6ec";

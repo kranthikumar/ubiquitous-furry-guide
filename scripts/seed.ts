@@ -1,5 +1,5 @@
 /**
- * Replaces the database contents with the seed data from src/lib/data.ts.
+ * Replaces the database contents with the seed data from src/db/seed-data.ts.
  * Safe to re-run. Production deploys seed automatically when the database
  * is empty (see scripts/predeploy.ts), so this is mainly for local use.
  *

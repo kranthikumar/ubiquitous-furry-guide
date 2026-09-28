@@ -5,6 +5,19 @@ export function formatCount(value: number): string {
   return compact.format(value);
 }
 
+/** "14:21" or "1:02:14" → seconds; NaN if malformed. */
+export function parseDuration(duration: string): number {
+  const parts = duration.trim().split(":");
+  if (
+    parts.length < 1 ||
+    parts.length > 3 ||
+    parts.some((p) => !/^\d+$/.test(p))
+  ) {
+    return NaN;
+  }
+  return parts.reduce((total, part) => total * 60 + Number(part), 0);
+}
+
 /** 861 → "14:21", 3734 → "1:02:14". */
 export function formatDuration(totalSeconds: number): string {
   const s = Math.max(0, Math.floor(totalSeconds));

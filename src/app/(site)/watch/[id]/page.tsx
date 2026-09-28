@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Thumbnail } from "@/components/thumbnail";
 import { VideoCard } from "@/components/video-card";
+import { VideoThumbnail } from "@/components/video-thumbnail";
 import { ChannelRow } from "@/components/watch/channel-row";
 import { Comments } from "@/components/watch/comments";
 import { Description } from "@/components/watch/description";
 import { Player } from "@/components/watch/player";
-import { getComments, getRelatedVideos, getVideo } from "@/db/queries";
+import {
+  getComments,
+  getGuest,
+  getRelatedVideos,
+  getVideo,
+} from "@/db/queries";
 import { formatCount } from "@/lib/format";
 
 export async function generateMetadata({
@@ -34,21 +39,34 @@ export default async function WatchPage({ params }: PageProps<"/watch/[id]">) {
   const video = await getVideo(id);
   if (!video) notFound();
 
-  const [related, comments] = await Promise.all([
+  const [related, comments, guest] = await Promise.all([
     getRelatedVideos(id),
     getComments(id),
+    getGuest(),
   ]);
 
   return (
     <div className="mx-auto grid max-w-[112rem] gap-6 sm:px-6 sm:pt-4 xl:grid-cols-[minmax(0,1fr)_26rem] xl:grid-rows-[auto_1fr] 2xl:grid-cols-[minmax(0,1fr)_30rem]">
       <div className="flex min-w-0 flex-col gap-3">
-        <Player
-          key={video.id}
-          frame={<Thumbnail id={video.id} art={video.thumbnailArt} />}
-          duration={video.durationSeconds}
-          captions={captionsFrom(video.description)}
-          nextHref={related[0] && `/watch/${related[0].id}`}
-        />
+        {video.videoUrl ? (
+          <video
+            key={video.id}
+            src={video.videoUrl}
+            poster={video.thumbnailUrl ?? undefined}
+            controls
+            playsInline
+            preload="metadata"
+            className="aspect-video w-full bg-black sm:rounded-xl"
+          />
+        ) : (
+          <Player
+            key={video.id}
+            frame={<VideoThumbnail video={video} />}
+            duration={video.durationSeconds}
+            captions={captionsFrom(video.description)}
+            nextHref={related[0] && `/watch/${related[0].id}`}
+          />
+        )}
         <div className="flex flex-col gap-3 px-4 sm:px-0">
           <h1 className="text-lg leading-snug font-bold text-ink sm:text-xl">
             {video.title}
@@ -77,7 +95,12 @@ export default async function WatchPage({ params }: PageProps<"/watch/[id]">) {
       </aside>
 
       <div className="px-4 pb-4 sm:px-0">
-        <Comments key={video.id} videoId={video.id} comments={comments} />
+        <Comments
+          key={video.id}
+          videoId={video.id}
+          comments={comments}
+          guest={guest}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-import type { ThumbnailArt } from "@/db/schema";
-import type { Scene } from "@/lib/data";
+import type { Scene, ThumbnailArt } from "@/lib/art";
 import { CritterFigure } from "./critter";
 
 const W = 320;

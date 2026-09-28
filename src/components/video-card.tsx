@@ -2,7 +2,7 @@ import Link from "next/link";
 import { formatCount, formatDuration } from "@/lib/format";
 import type { VideoSummary } from "@/lib/types";
 import { Avatar } from "./avatar";
-import { Thumbnail } from "./thumbnail";
+import { VideoThumbnail } from "./video-thumbnail";
 
 export function VideoCard({ video }: { video: VideoSummary }) {
   const href = `/watch/${video.id}`;
@@ -15,7 +15,7 @@ export function VideoCard({ video }: { video: VideoSummary }) {
         className="relative block aspect-video overflow-hidden rounded-xl bg-chip"
       >
         <div className="size-full transition-transform duration-300 group-hover:scale-[1.03]">
-          <Thumbnail id={video.id} art={video.thumbnailArt} />
+          <VideoThumbnail video={video} />
         </div>
         <span className="absolute right-2 bottom-2 rounded bg-black/80 px-1 py-0.5 text-xs font-medium text-white tabular-nums">
           {formatDuration(video.durationSeconds)}

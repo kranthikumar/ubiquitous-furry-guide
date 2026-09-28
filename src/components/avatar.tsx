@@ -1,4 +1,4 @@
-import type { AvatarArt } from "@/db/schema";
+import type { AvatarArt } from "@/lib/art";
 import { CritterFigure } from "./critter";
 
 export function Avatar({

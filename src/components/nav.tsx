@@ -15,7 +15,7 @@ import {
   TvMinimalPlay,
   Zap,
 } from "lucide-react";
-import { followedChannels, getChannel } from "@/lib/data";
+import type { ChannelBadge } from "@/lib/types";
 import { Avatar } from "./avatar";
 
 type Icon = ComponentType<SVGProps<SVGSVGElement>>;
@@ -137,11 +137,16 @@ export function ShowMoreButton({
 
 const VISIBLE_CHANNELS = 4;
 
-export function FollowedChannels({ tone = "light" }: { tone?: Tone }) {
+export function FollowedChannels({
+  channels,
+  tone = "light",
+}: {
+  channels: ChannelBadge[];
+  tone?: Tone;
+}) {
   const [expanded, setExpanded] = useState(false);
-  const shown = expanded
-    ? followedChannels
-    : followedChannels.slice(0, VISIBLE_CHANNELS);
+  if (channels.length === 0) return null;
+  const shown = expanded ? channels : channels.slice(0, VISIBLE_CHANNELS);
   const listId = `followed-channels-${tone}`;
   return (
     <section className={`border-b py-3 ${toneStyles[tone].divider}`}>
@@ -151,12 +156,11 @@ export function FollowedChannels({ tone = "light" }: { tone?: Tone }) {
         Followed Channels
       </h2>
       <ul id={listId} className="flex flex-col gap-0.5">
-        {shown.map((handle) => {
-          const channel = getChannel(handle);
+        {shown.map((channel) => {
           return (
-            <li key={handle}>
+            <li key={channel.id}>
               <Link
-                href={`/channel/${handle}`}
+                href={`/channel/${channel.id}`}
                 prefetch={false}
                 className={`flex h-10 items-center gap-4 rounded-lg px-3 text-sm ${toneStyles[tone].item}`}
               >
@@ -166,7 +170,7 @@ export function FollowedChannels({ tone = "light" }: { tone?: Tone }) {
             </li>
           );
         })}
-        {followedChannels.length > VISIBLE_CHANNELS && (
+        {channels.length > VISIBLE_CHANNELS && (
           <li>
             <ShowMoreButton
               tone={tone}

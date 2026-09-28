@@ -13,9 +13,23 @@ import {
 import { connection } from "next/server";
 import { cache } from "react";
 import { timeAgo } from "@/lib/format";
-import type { CommentView, VideoDetail, VideoSummary } from "@/lib/types";
+import { GUEST_CHANNEL_ID } from "@/lib/constants";
+import type {
+  Category,
+  ChannelBadge,
+  CommentView,
+  VideoDetail,
+  VideoSummary,
+} from "@/lib/types";
 import { getDb } from "./index";
-import { channels, comments, videos } from "./schema";
+import {
+  categories,
+  channels,
+  comments,
+  followedChannels,
+  videos,
+} from "./schema";
+import { DEFAULT_GUEST } from "./seed-data";
 
 const channelColumns = {
   id: channels.id,
@@ -31,6 +45,7 @@ const summaryColumns = {
   durationSeconds: videos.durationSeconds,
   publishedAt: videos.publishedAt,
   thumbnailArt: videos.thumbnailArt,
+  thumbnailUrl: videos.thumbnailUrl,
   channel: channelColumns,
 };
 
@@ -90,13 +105,21 @@ export const getVideo = cache(
   async (id: string): Promise<VideoDetail | undefined> => {
     await connection();
     const [row] = await getDb()
-      .select({ ...summaryColumns, description: videos.description })
+      .select({
+        ...summaryColumns,
+        description: videos.description,
+        videoUrl: videos.videoUrl,
+      })
       .from(videos)
       .innerJoin(channels, eq(videos.channelId, channels.id))
       .where(eq(videos.id, id))
       .limit(1);
     return (
-      row && { ...toSummary(row, new Date()), description: row.description }
+      row && {
+        ...toSummary(row, new Date()),
+        description: row.description,
+        videoUrl: row.videoUrl,
+      }
     );
   },
 );
@@ -145,3 +168,48 @@ export async function getComments(videoId: string): Promise<CommentView[]> {
     createdAt: createdAt.getTime(),
   }));
 }
+
+/** Category chips, in admin-defined order. Cached per request. */
+export const listCategories = cache(async (): Promise<Category[]> => {
+  await connection();
+  return getDb()
+    .select({ slug: categories.slug, label: categories.label })
+    .from(categories)
+    .orderBy(asc(categories.position), asc(categories.label));
+});
+
+const badgeColumns = {
+  id: channels.id,
+  name: channels.name,
+  avatar: channels.avatar,
+};
+
+/**
+ * The shared guest user everyone comments as. Falls back to the built-in
+ * default if its row was deleted (it is recreated on the next comment).
+ */
+export const getGuest = cache(async (): Promise<ChannelBadge> => {
+  await connection();
+  const [row] = await getDb()
+    .select(badgeColumns)
+    .from(channels)
+    .where(eq(channels.id, GUEST_CHANNEL_ID))
+    .limit(1);
+  return (
+    row ?? {
+      id: DEFAULT_GUEST.handle,
+      name: DEFAULT_GUEST.name,
+      avatar: DEFAULT_GUEST.avatar,
+    }
+  );
+});
+
+/** Sidebar "Followed Channels", in admin-defined order. */
+export const listFollowedChannels = cache(async (): Promise<ChannelBadge[]> => {
+  await connection();
+  return getDb()
+    .select(badgeColumns)
+    .from(followedChannels)
+    .innerJoin(channels, eq(followedChannels.channelId, channels.id))
+    .orderBy(asc(followedChannels.position), asc(channels.name));
+});

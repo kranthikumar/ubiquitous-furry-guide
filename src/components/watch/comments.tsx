@@ -2,11 +2,10 @@
 
 import { useId, useOptimistic, useState, useTransition } from "react";
 import { Check, ListFilter, ThumbsUp } from "lucide-react";
-import { addComment } from "@/app/watch/[id]/actions";
-import { viewer } from "@/lib/data";
+import { addComment } from "@/app/(site)/watch/[id]/actions";
 import { formatCount } from "@/lib/format";
-import { MAX_COMMENT_LENGTH } from "@/lib/limits";
-import type { CommentView } from "@/lib/types";
+import { MAX_COMMENT_LENGTH } from "@/lib/constants";
+import type { ChannelBadge, CommentView } from "@/lib/types";
 import { Avatar } from "../avatar";
 
 type Sort = "top" | "newest";
@@ -112,8 +111,10 @@ function CommentItem({
 }
 
 function AddComment({
+  guest,
   onAdd,
 }: {
+  guest: ChannelBadge;
   /** Resolves to whether the comment was saved. */
   onAdd: (text: string) => Promise<boolean>;
 }) {
@@ -139,7 +140,7 @@ function AddComment({
         }
       }}
     >
-      <Avatar channel={viewer} className="size-10" />
+      <Avatar channel={guest} className="size-10" />
       <div className="min-w-0 flex-1">
         <label htmlFor={inputId} className="sr-only">
           Add a comment
@@ -185,9 +186,12 @@ function AddComment({
 export function Comments({
   videoId,
   comments,
+  guest,
 }: {
   videoId: string;
   comments: CommentView[];
+  /** Who new comments are posted as (the shared guest). */
+  guest: ChannelBadge;
 }) {
   const [optimistic, addOptimistic] = useOptimistic(
     comments,
@@ -198,7 +202,7 @@ export function Comments({
   const [sort, setSort] = useState<Sort>("top");
 
   // Your own comments stay pinned on top, as on YouTube.
-  const mine = (c: CommentView) => (c.author.id === viewer.handle ? 0 : 1);
+  const mine = (c: CommentView) => (c.author.id === guest.id ? 0 : 1);
   const sorted = [...optimistic].sort(
     (a, b) =>
       mine(a) - mine(b) ||
@@ -216,11 +220,7 @@ export function Comments({
           likes: 0,
           published: "Just now",
           createdAt: Date.now(),
-          author: {
-            id: viewer.handle,
-            name: viewer.name,
-            avatar: viewer.avatar,
-          },
+          author: guest,
         });
         const result = await addComment(videoId, text).catch(() => ({
           ok: false as const,
@@ -239,7 +239,7 @@ export function Comments({
         </h2>
         <SortMenu sort={sort} onChange={setSort} />
       </div>
-      <AddComment onAdd={add} />
+      <AddComment guest={guest} onAdd={add} />
       {error && (
         <p role="alert" className="-mt-3 text-sm text-paw">
           {error}

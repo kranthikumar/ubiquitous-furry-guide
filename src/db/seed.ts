@@ -1,5 +1,13 @@
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { channels, commentsFor, parseDuration, videos } from "../lib/data";
+import {
+  categories,
+  channels,
+  commentsFor,
+  DEFAULT_GUEST,
+  followedChannels,
+  parseDuration,
+  videos,
+} from "./seed-data";
 import * as schema from "./schema";
 
 export type Database = PostgresJsDatabase<typeof schema>;
@@ -25,15 +33,23 @@ function dateMinutesAgo(minutes: number, now: Date): Date {
   return new Date(now.getTime() - minutes * 60_000);
 }
 
-/** Replaces all channels, videos and comments with the seed data. */
+/** Replaces all site content with the seed data. */
 export async function seed(db: Database) {
   const now = new Date();
   await db.transaction(async (tx) => {
-    // Channels cascade to their videos and comments.
+    // Channels cascade to videos, comments and followed channels.
     await tx.delete(schema.channels);
+    await tx.delete(schema.categories);
+
+    await tx.insert(schema.categories).values(
+      categories.map((category, index) => ({
+        ...category,
+        position: index + 1,
+      })),
+    );
 
     await tx.insert(schema.channels).values(
-      channels.map((channel) => ({
+      [...channels, DEFAULT_GUEST].map((channel) => ({
         id: channel.handle,
         name: channel.name,
         subscribers: channel.subscribers,
@@ -41,8 +57,15 @@ export async function seed(db: Database) {
       })),
     );
 
+    await tx.insert(schema.followedChannels).values(
+      followedChannels.map((channelId, index) => ({
+        channelId,
+        position: index + 1,
+      })),
+    );
+
     await tx.insert(schema.videos).values(
-      videos.map((video) => ({
+      videos.map((video, index) => ({
         id: video.id,
         channelId: video.channel,
         title: video.title,
@@ -55,7 +78,12 @@ export async function seed(db: Database) {
           critters: video.critters,
           caption: video.caption,
         },
-        publishedAt: dateMinutesAgo(minutesAgo(video.published), now),
+        // A second apart per video, so videos with the same label ("1 hour
+        // ago") keep the seed order in the newest-first feed.
+        publishedAt: new Date(
+          dateMinutesAgo(minutesAgo(video.published), now).getTime() -
+            index * 1000,
+        ),
       })),
     );
 
@@ -73,11 +101,14 @@ export async function seed(db: Database) {
   });
 }
 
-/** Seeds only when there are no channels yet, so real data is never touched. */
+/**
+ * Seeds only when there are no videos yet, so real data is never touched.
+ * (Checks videos, not channels: a migration creates the guest channel.)
+ */
 export async function seedIfEmpty(db: Database): Promise<boolean> {
   const existing = await db
-    .select({ id: schema.channels.id })
-    .from(schema.channels)
+    .select({ id: schema.videos.id })
+    .from(schema.videos)
     .limit(1);
   if (existing.length > 0) return false;
   await seed(db);

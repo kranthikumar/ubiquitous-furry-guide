@@ -9,17 +9,9 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
-import type { Critter, Scene } from "../lib/data";
+import type { AvatarArt, ThumbnailArt } from "../lib/art";
 
-/** Colours and pose of a channel's cartoon avatar. */
-export type AvatarArt = Critter & { bg: string };
-
-/** How to draw a placeholder thumbnail until real ones are uploaded. */
-export type ThumbnailArt = {
-  scene: Scene;
-  critters: Critter[];
-  caption?: string[];
-};
+export type { AvatarArt, ThumbnailArt };
 
 // Supabase exposes the public schema through its Data API, so every table
 // enables row-level security. With no policies, only direct database
@@ -87,3 +79,23 @@ export const comments = pgTable(
   },
   (t) => [index("comments_video_id_idx").on(t.videoId, t.createdAt.desc())],
 ).enableRLS();
+
+/** Category chips on the home page; videos.categories holds their slugs. */
+export const categories = pgTable("categories", {
+  slug: text("slug").primaryKey(),
+  label: text("label").notNull(),
+  position: integer("position").notNull().default(0),
+  createdAt: createdAt(),
+}).enableRLS();
+
+/**
+ * Channels listed under "Followed Channels" in the sidebar. Curated in the
+ * admin until accounts (and real per-user subscriptions) exist.
+ */
+export const followedChannels = pgTable("followed_channels", {
+  channelId: text("channel_id")
+    .primaryKey()
+    .references(() => channels.id, { onDelete: "cascade" }),
+  position: integer("position").notNull().default(0),
+  createdAt: createdAt(),
+}).enableRLS();

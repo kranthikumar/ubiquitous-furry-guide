@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { categories } from "@/lib/data";
+import type { Category } from "@/lib/types";
 
 export function CategoryChips({
+  categories,
   active,
   query,
 }: {
+  categories: Category[];
   active?: string;
   query?: string;
 }) {

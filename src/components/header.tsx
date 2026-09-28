@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ArrowLeft, Bell, Menu, Search, Video } from "lucide-react";
-import { viewer } from "@/lib/data";
+import type { ChannelBadge } from "@/lib/types";
 import { Avatar } from "./avatar";
 import { PawIcon } from "./icons";
 import { Logo } from "./logo";
@@ -11,7 +11,13 @@ import { SearchForm } from "./search-form";
 const iconButton =
   "grid size-10 shrink-0 place-items-center rounded-full text-ink hover:bg-chip";
 
-export function Header({ onMenuClick }: { onMenuClick: () => void }) {
+export function Header({
+  onMenuClick,
+  guest,
+}: {
+  onMenuClick: () => void;
+  guest: ChannelBadge;
+}) {
   // Below 640px the search box is replaced by an icon that expands it
   // across the whole header.
   const [mobileSearch, setMobileSearch] = useState(false);
@@ -86,7 +92,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
             className="ml-1 rounded-full"
             aria-label="Your account"
           >
-            <Avatar channel={viewer} className="size-8" />
+            <Avatar channel={guest} className="size-8" />
           </button>
         </div>
       </header>

@@ -1,45 +1,12 @@
 // Seed data for the dummy site. Everything here is made up.
 //
-// The database is filled from this file (src/db/seed.ts); pages read the
-// database, not this file. The UI still uses a few static pieces directly:
-// categories, followed channels in the sidebar, and the guest viewer.
+// Only used to fill a fresh database (src/db/seed.ts). The site and admin
+// read and write the database; nothing in the UI imports this file.
+import { GUEST_CHANNEL_ID } from "../lib/constants";
+import type { Critter, Scene } from "../lib/art";
+import { parseDuration } from "../lib/format";
 
-export type Species =
-  | "fox"
-  | "wolf"
-  | "husky"
-  | "cat"
-  | "hyena"
-  | "dragon"
-  | "protogen";
-
-/** A cartoon character drawn into thumbnails and avatars. */
-export type Critter = {
-  species: Species;
-  fur: string;
-  /** Muzzle, chest and inner-ear colour. */
-  belly: string;
-  eyes: string;
-  shirt: string;
-  /** Position and size inside the 320×180 thumbnail. */
-  x?: number;
-  y?: number;
-  scale?: number;
-  flip?: boolean;
-  /** Draw as an uncoloured pencil sketch. */
-  sketch?: boolean;
-};
-
-export type Scene =
-  | "street"
-  | "sketch"
-  | "workshop"
-  | "arena"
-  | "neon"
-  | "burst"
-  | "forest"
-  | "studio"
-  | "boxes";
+export { parseDuration };
 
 export type Category = { slug: string; label: string };
 
@@ -206,6 +173,7 @@ export const channels: Channel[] = [
   },
 ];
 
+/** Channels listed under "Followed Channels" in the sidebar, in order. */
 export const followedChannels = [
   "anthroarts",
   "fuzzbuttvlogs",
@@ -215,12 +183,6 @@ export const followedChannels = [
   "gamerhyena",
   "dancepaws",
 ];
-
-export function getChannel(handle: string): Channel {
-  const channel = channels.find((c) => c.handle === handle);
-  if (!channel) throw new Error(`Unknown channel: ${handle}`);
-  return channel;
-}
 
 export const videos: Video[] = [
   {
@@ -565,20 +527,16 @@ export const videos: Video[] = [
   },
 ];
 
-/** The signed-in (pretend) user, shown in the header and on comments. */
-export const viewer: Channel = {
-  handle: "you",
+/**
+ * The shared guest user everyone comments as until accounts exist. Also
+ * recreated from here if it is deleted in the admin.
+ */
+export const DEFAULT_GUEST: Channel = {
+  handle: GUEST_CHANNEL_ID,
   name: "You",
   subscribers: 0,
   avatar: { ...greyHusky, shirt: "#1f2a44", bg: "#e3e8f0" },
 };
-
-/** "14:21" or "1:02:14" → seconds. */
-export function parseDuration(duration: string): number {
-  return duration
-    .split(":")
-    .reduce((total, part) => total * 60 + Number(part), 0);
-}
 
 export type Comment = {
   id: string;

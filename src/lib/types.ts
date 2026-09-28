@@ -1,6 +1,6 @@
 // Shapes the database layer hands to pages and components. Plain data only,
 // so they cross the server/client boundary unchanged.
-import type { AvatarArt, ThumbnailArt } from "@/db/schema";
+import type { AvatarArt, ThumbnailArt } from "@/lib/art";
 
 export type ChannelSummary = {
   /** The channel handle, e.g. "fuzzbuttvlogs". */
@@ -10,6 +10,11 @@ export type ChannelSummary = {
   avatar: AvatarArt;
 };
 
+/** Just enough of a channel to show its name and avatar. */
+export type ChannelBadge = Pick<ChannelSummary, "id" | "name" | "avatar">;
+
+export type Category = { slug: string; label: string };
+
 export type VideoSummary = {
   id: string;
   title: string;
@@ -18,10 +23,16 @@ export type VideoSummary = {
   /** Relative label computed at request time, e.g. "3 days ago". */
   published: string;
   thumbnailArt: ThumbnailArt | null;
+  /** Real thumbnail image; falls back to thumbnailArt when null. */
+  thumbnailUrl: string | null;
   channel: ChannelSummary;
 };
 
-export type VideoDetail = VideoSummary & { description: string };
+export type VideoDetail = VideoSummary & {
+  description: string;
+  /** Real video file; the simulated player is used when null. */
+  videoUrl: string | null;
+};
 
 export type CommentView = {
   id: string;
@@ -31,5 +42,5 @@ export type CommentView = {
   published: string;
   /** Milliseconds since the epoch, for sorting. */
   createdAt: number;
-  author: Pick<ChannelSummary, "id" | "name" | "avatar">;
+  author: ChannelBadge;
 };

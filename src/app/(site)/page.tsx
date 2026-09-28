@@ -2,8 +2,7 @@ import Link from "next/link";
 import { SearchX } from "lucide-react";
 import { CategoryChips } from "@/components/category-chips";
 import { VideoCard } from "@/components/video-card";
-import { listVideos } from "@/db/queries";
-import { categories } from "@/lib/data";
+import { listCategories, listVideos } from "@/db/queries";
 
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -13,6 +12,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const params = await searchParams;
   const query = first(params.q)?.trim() || undefined;
   const requested = first(params.category);
+  const categories = await listCategories();
   const category = categories.some((c) => c.slug === requested)
     ? requested
     : undefined;
@@ -20,7 +20,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
   return (
     <>
-      <CategoryChips active={category} query={query} />
+      <CategoryChips categories={categories} active={category} query={query} />
       <section aria-labelledby="videos-heading" className="px-4 pt-2 sm:px-6">
         <h1 id="videos-heading" className="sr-only">
           {query ? `Search results for “${query}”` : "Recommended videos"}

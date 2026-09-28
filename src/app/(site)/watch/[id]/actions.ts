@@ -4,8 +4,8 @@ import { eq } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { getDb } from "@/db";
 import { channels, comments, videos } from "@/db/schema";
-import { viewer } from "@/lib/data";
-import { MAX_COMMENT_LENGTH } from "@/lib/limits";
+import { DEFAULT_GUEST } from "@/db/seed-data";
+import { MAX_COMMENT_LENGTH } from "@/lib/constants";
 
 export type AddCommentResult = { ok: true } | { ok: false; error: string };
 
@@ -38,19 +38,19 @@ export async function addComment(
   if (!video) return { ok: false, error: "That video no longer exists." };
 
   await db.transaction(async (tx) => {
-    // The guest channel is created the first time anyone comments.
+    // Recreate the guest channel if it was deleted in the admin.
     await tx
       .insert(channels)
       .values({
-        id: viewer.handle,
-        name: viewer.name,
+        id: DEFAULT_GUEST.handle,
+        name: DEFAULT_GUEST.name,
         subscribers: 0,
-        avatar: viewer.avatar,
+        avatar: DEFAULT_GUEST.avatar,
       })
       .onConflictDoNothing();
     await tx
       .insert(comments)
-      .values({ videoId, authorId: viewer.handle, body: text });
+      .values({ videoId, authorId: DEFAULT_GUEST.handle, body: text });
   });
 
   // Re-render the page so the saved comment replaces the optimistic one.
