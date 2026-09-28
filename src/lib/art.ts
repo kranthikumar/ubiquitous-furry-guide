@@ -48,7 +48,7 @@ export type ThumbnailArt = {
   caption?: string[];
 };
 
-export const SPECIES: Species[] = [
+export const SPECIES = [
   "fox",
   "wolf",
   "husky",
@@ -56,9 +56,9 @@ export const SPECIES: Species[] = [
   "hyena",
   "dragon",
   "protogen",
-];
+] as const satisfies readonly Species[];
 
-export const SCENES: Scene[] = [
+export const SCENES = [
   "street",
   "sketch",
   "workshop",
@@ -68,4 +68,4 @@ export const SCENES: Scene[] = [
   "forest",
   "studio",
   "boxes",
-];
+] as const satisfies readonly Scene[];
